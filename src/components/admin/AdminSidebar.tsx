@@ -39,7 +39,7 @@ export function AdminSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-primary text-primary-foreground font-medium shadow-elegant" 
-      : "text-foreground";
+      : "text-black dark:text-white";
 
   return (
     <Sidebar
