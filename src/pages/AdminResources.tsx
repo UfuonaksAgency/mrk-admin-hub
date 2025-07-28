@@ -18,7 +18,8 @@ import {
   Video,
   FileSpreadsheet,
   FileImage,
-  File
+  File,
+  Smartphone
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -69,6 +70,10 @@ function getResourceIcon(type: string) {
       return FileSpreadsheet;
     case 'image':
       return FileImage;
+    case 'word':
+      return FileText;
+    case 'apk':
+      return Smartphone;
     case 'tool':
       return File;
     default:
@@ -268,6 +273,8 @@ export function AdminResources() {
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="spreadsheet">Spreadsheet</SelectItem>
                     <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="word">Word Document</SelectItem>
+                    <SelectItem value="apk">APK</SelectItem>
                     <SelectItem value="tool">Tool</SelectItem>
                   </SelectContent>
                 </Select>

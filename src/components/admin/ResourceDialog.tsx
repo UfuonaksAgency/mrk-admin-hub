@@ -209,6 +209,8 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="spreadsheet">Spreadsheet</SelectItem>
                     <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="word">Word Document</SelectItem>
+                    <SelectItem value="apk">APK</SelectItem>
                     <SelectItem value="tool">Tool</SelectItem>
                   </SelectContent>
                 </Select>
@@ -267,7 +269,7 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
                 type="file"
                 onChange={handleFileUpload}
                 disabled={uploading}
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.mp4,.mov,.jpg,.jpeg,.png"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.mp4,.mov,.avi,.mkv,.jpg,.jpeg,.png,.gif,.apk"
               />
               {uploading && <p className="text-sm text-muted-foreground mt-1">Uploading...</p>}
               {formData.download_url && (
