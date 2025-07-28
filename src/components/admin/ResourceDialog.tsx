@@ -20,6 +20,7 @@ interface FreeResource {
   download_url?: string;
   is_active: boolean;
   display_order: number;
+  icon_name: string;
 }
 
 interface ResourceDialogProps {
@@ -33,12 +34,13 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
   const [formData, setFormData] = useState<FreeResource>({
     title: "",
     description: "",
-    type: "pdf",
+    type: "PDF",
     size_info: "",
     page_info: "",
     features: [],
     is_active: true,
-    display_order: 0
+    display_order: 0,
+    icon_name: "FileText"
   });
   const [featuresText, setFeaturesText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,12 +55,13 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
       setFormData({
         title: "",
         description: "",
-        type: "pdf",
+        type: "PDF",
         size_info: "",
         page_info: "",
         features: [],
         is_active: true,
-        display_order: 0
+        display_order: 0,
+        icon_name: "FileText"
       });
       setFeaturesText("");
     }
@@ -199,19 +202,33 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
                 <Label htmlFor="type">Type</Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(value) => setFormData({ ...formData, type: value })}
+                  onValueChange={(value) => {
+                    const getIconName = (type: string) => {
+                      switch (type) {
+                        case 'PDF': return 'FileText';
+                        case 'VIDEO': return 'Video';
+                        case 'SPREADSHEET': return 'FileSpreadsheet';
+                        case 'IMAGE': return 'FileImage';
+                        case 'WORD': return 'FileText';
+                        case 'APK': return 'Smartphone';
+                        case 'TOOL': return 'File';
+                        default: return 'File';
+                      }
+                    };
+                    setFormData({ ...formData, type: value, icon_name: getIconName(value) });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="video">Video</SelectItem>
-                    <SelectItem value="spreadsheet">Spreadsheet</SelectItem>
-                    <SelectItem value="image">Image</SelectItem>
-                    <SelectItem value="word">Word Document</SelectItem>
-                    <SelectItem value="apk">APK</SelectItem>
-                    <SelectItem value="tool">Tool</SelectItem>
+                    <SelectItem value="PDF">PDF</SelectItem>
+                    <SelectItem value="VIDEO">Video</SelectItem>
+                    <SelectItem value="SPREADSHEET">Spreadsheet</SelectItem>
+                    <SelectItem value="IMAGE">Image</SelectItem>
+                    <SelectItem value="WORD">Word Document</SelectItem>
+                    <SelectItem value="APK">APK</SelectItem>
+                    <SelectItem value="TOOL">Tool</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -58,23 +58,24 @@ interface FreeResource {
   is_active: boolean;
   display_order: number;
   created_at: string;
+  icon_name: string;
 }
 
 function getResourceIcon(type: string) {
-  switch (type?.toLowerCase()) {
-    case 'pdf':
+  switch (type?.toUpperCase()) {
+    case 'PDF':
       return FileText;
-    case 'video':
+    case 'VIDEO':
       return Video;
-    case 'spreadsheet':
+    case 'SPREADSHEET':
       return FileSpreadsheet;
-    case 'image':
+    case 'IMAGE':
       return FileImage;
-    case 'word':
+    case 'WORD':
       return FileText;
-    case 'apk':
+    case 'APK':
       return Smartphone;
-    case 'tool':
+    case 'TOOL':
       return File;
     default:
       return File;
@@ -269,13 +270,13 @@ export function AdminResources() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="video">Video</SelectItem>
-                    <SelectItem value="spreadsheet">Spreadsheet</SelectItem>
-                    <SelectItem value="image">Image</SelectItem>
-                    <SelectItem value="word">Word Document</SelectItem>
-                    <SelectItem value="apk">APK</SelectItem>
-                    <SelectItem value="tool">Tool</SelectItem>
+                    <SelectItem value="PDF">PDF</SelectItem>
+                    <SelectItem value="VIDEO">Video</SelectItem>
+                    <SelectItem value="SPREADSHEET">Spreadsheet</SelectItem>
+                    <SelectItem value="IMAGE">Image</SelectItem>
+                    <SelectItem value="WORD">Word Document</SelectItem>
+                    <SelectItem value="APK">APK</SelectItem>
+                    <SelectItem value="TOOL">Tool</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
