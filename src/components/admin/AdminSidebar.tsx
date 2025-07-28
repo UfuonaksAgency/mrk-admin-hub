@@ -27,9 +27,6 @@ const navigationItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Blog Posts", url: "/admin/blog", icon: FileText },
   { title: "Free Resources", url: "/admin/resources", icon: Download },
-  { title: "Consultations", url: "/admin/consultations", icon: Calendar },
-  { title: "Mentorship Apps", url: "/admin/mentorship", icon: GraduationCap },
-  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
 ];
 
 export function AdminSidebar() {
@@ -42,7 +39,7 @@ export function AdminSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-primary text-primary-foreground font-medium shadow-elegant" 
-      : "hover:bg-muted/80 transition-colors";
+      : "text-foreground";
 
   return (
     <Sidebar

@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Users, FileText, Download, Calendar, GraduationCap } from "lucide-react";
+import { TrendingUp, Users, FileText, Download } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StatCardProps {
   title: string;
@@ -33,49 +35,90 @@ function StatCard({ title, value, description, icon: Icon, trend }: StatCardProp
 }
 
 export function DashboardStats() {
+  const [stats, setStats] = useState({
+    blogPosts: 0,
+    publishedPosts: 0,
+    totalResources: 0,
+    activeResources: 0,
+    totalDownloads: 0,
+    analyticsEvents: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [blogResult, resourcesResult, downloadsResult, analyticsResult] = await Promise.all([
+          supabase.from('blog_posts').select('id, is_published'),
+          supabase.from('free_resources').select('id, is_active'),
+          supabase.from('resource_downloads').select('id'),
+          supabase.from('analytics_events').select('id')
+        ]);
+
+        const blogPosts = blogResult.data || [];
+        const resources = resourcesResult.data || [];
+        
+        setStats({
+          blogPosts: blogPosts.length,
+          publishedPosts: blogPosts.filter(post => post.is_published).length,
+          totalResources: resources.length,
+          activeResources: resources.filter(resource => resource.is_active).length,
+          totalDownloads: downloadsResult.data?.length || 0,
+          analyticsEvents: analyticsResult.data?.length || 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader className="space-y-0 pb-2">
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-2/3"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <StatCard
         title="Total Blog Posts"
-        value={24}
-        description="Published articles"
+        value={stats.blogPosts}
+        description={`${stats.publishedPosts} published`}
         icon={FileText}
-        trend="+12% from last month"
+      />
+      <StatCard
+        title="Free Resources"
+        value={stats.totalResources}
+        description={`${stats.activeResources} active`}
+        icon={Download}
       />
       <StatCard
         title="Resource Downloads"
-        value="1,234"
-        description="This month"
+        value={stats.totalDownloads}
+        description="Total downloads"
         icon={Download}
-        trend="+18% from last month"
       />
       <StatCard
-        title="Consultation Requests"
-        value={56}
-        description="Pending responses"
-        icon={Calendar}
-        trend="+8% from last month"
-      />
-      <StatCard
-        title="Mentorship Applications"
-        value={23}
-        description="Under review"
-        icon={GraduationCap}
-        trend="+25% from last month"
-      />
-      <StatCard
-        title="Active Users"
-        value="2,847"
-        description="Monthly visitors"
-        icon={Users}
-        trend="+15% from last month"
-      />
-      <StatCard
-        title="Membership Clicks"
-        value={142}
-        description="This week"
+        title="Site Activity"
+        value={stats.analyticsEvents}
+        description="Analytics events"
         icon={TrendingUp}
-        trend="+22% from last week"
       />
     </div>
   );

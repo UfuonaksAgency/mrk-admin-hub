@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ResourceDialog } from "@/components/admin/ResourceDialog";
 import { 
   Plus, 
   Search, 
@@ -32,7 +33,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface FreeResource {
   id: string;
@@ -69,6 +80,10 @@ export function AdminResources() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [resources, setResources] = useState<FreeResource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState<FreeResource | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [resourceToDelete, setResourceToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -105,6 +120,57 @@ export function AdminResources() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
+  const handleEdit = (resource: FreeResource) => {
+    setEditingResource(resource);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!resourceToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('free_resources')
+        .delete()
+        .eq('id', resourceToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Resource deleted successfully.",
+      });
+
+      fetchResources();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete resource.",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setResourceToDelete(null);
+    }
+  };
+
+  const handleSave = () => {
+    fetchResources();
+    setEditingResource(null);
+  };
+
+  const handleDownload = async (resource: FreeResource) => {
+    if (resource.download_url) {
+      // Track download
+      await supabase.from('resource_downloads').insert([{
+        resource_id: resource.id
+      }]);
+      
+      // Open download link
+      window.open(resource.download_url, '_blank');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -115,7 +181,13 @@ export function AdminResources() {
               Manage downloadable resources for your audience
             </p>
           </div>
-          <Button className="bg-gradient-primary hover:opacity-90">
+          <Button 
+            className="bg-gradient-primary hover:opacity-90"
+            onClick={() => {
+              setEditingResource(null);
+              setDialogOpen(true);
+            }}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Resource
           </Button>
@@ -195,15 +267,21 @@ export function AdminResources() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownload(resource)}>
                               <Download className="w-4 h-4 mr-2" />
                               Download
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEdit(resource)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={() => {
+                                setResourceToDelete(resource.id);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
@@ -250,6 +328,28 @@ export function AdminResources() {
           </CardContent>
         </Card>
       </div>
+
+      <ResourceDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        resource={editingResource}
+        onSave={handleSave}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the resource.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

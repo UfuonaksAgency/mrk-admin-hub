@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { BlogDialog } from "@/components/admin/BlogDialog";
 import { 
   Plus, 
   Search, 
@@ -27,18 +28,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface BlogPost {
   id: string;
   title: string;
   slug: string;
   excerpt: string | null;
+  content: string;
   is_published: boolean;
   is_featured: boolean;
   view_count: number | null;
   created_at: string;
   published_at: string | null;
+  tags: string[];
 }
 
 export function AdminBlog() {
@@ -46,6 +59,10 @@ export function AdminBlog() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -81,6 +98,45 @@ export function AdminBlog() {
     return matchesSearch && matchesStatus;
   });
 
+  const handleEdit = (post: BlogPost) => {
+    setEditingPost(post);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!postToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Blog post deleted successfully.",
+      });
+
+      fetchBlogPosts();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete blog post.",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setPostToDelete(null);
+    }
+  };
+
+  const handleSave = () => {
+    fetchBlogPosts();
+    setEditingPost(null);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -91,7 +147,13 @@ export function AdminBlog() {
               Manage your blog content and articles
             </p>
           </div>
-          <Button className="bg-gradient-primary hover:opacity-90">
+          <Button 
+            className="bg-gradient-primary hover:opacity-90"
+            onClick={() => {
+              setEditingPost(null);
+              setDialogOpen(true);
+            }}
+          >
             <Plus className="w-4 h-4 mr-2" />
             New Post
           </Button>
@@ -171,11 +233,17 @@ export function AdminBlog() {
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(post)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={() => {
+                          setPostToDelete(post.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
@@ -188,6 +256,28 @@ export function AdminBlog() {
           </CardContent>
         </Card>
       </div>
+
+      <BlogDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        blogPost={editingPost}
+        onSave={handleSave}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the blog post.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
