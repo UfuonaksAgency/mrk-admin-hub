@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Upload, X, Image } from "lucide-react";
 
 interface BlogPost {
   id?: string;
@@ -20,6 +21,7 @@ interface BlogPost {
   seo_title?: string;
   seo_description?: string;
   reading_time?: number;
+  featured_image_url?: string;
 }
 
 interface BlogDialogProps {
@@ -37,9 +39,12 @@ export function BlogDialog({ open, onOpenChange, blogPost, onSave }: BlogDialogP
     content: "",
     is_published: false,
     is_featured: false,
-    tags: []
+    tags: [],
+    featured_image_url: ""
   });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageInputType, setImageInputType] = useState<'file' | 'url'>('file');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,7 +58,8 @@ export function BlogDialog({ open, onOpenChange, blogPost, onSave }: BlogDialogP
         content: "",
         is_published: false,
         is_featured: false,
-        tags: []
+        tags: [],
+        featured_image_url: ""
       });
     }
   }, [blogPost]);
@@ -65,6 +71,43 @@ export function BlogDialog({ open, onOpenChange, blogPost, onSave }: BlogDialogP
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
+  };
+
+  const handleImageUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('blog_images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('blog_images')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, featured_image_url: data.publicUrl });
+      
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to upload image.",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData({ ...formData, featured_image_url: "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,6 +208,78 @@ export function BlogDialog({ open, onOpenChange, blogPost, onSave }: BlogDialogP
                 rows={8}
                 required
               />
+            </div>
+
+            <div>
+              <Label>Featured Image</Label>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={imageInputType === 'file' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setImageInputType('file')}
+                  >
+                    Upload File
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={imageInputType === 'url' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setImageInputType('url')}
+                  >
+                    Enter URL
+                  </Button>
+                </div>
+
+                {imageInputType === 'file' ? (
+                  <div>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(file);
+                      }}
+                      disabled={uploading}
+                    />
+                    {uploading && (
+                      <p className="text-sm text-muted-foreground mt-1">Uploading...</p>
+                    )}
+                  </div>
+                ) : (
+                  <Input
+                    placeholder="Enter image URL"
+                    value={formData.featured_image_url || ""}
+                    onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
+                  />
+                )}
+
+                {formData.featured_image_url && (
+                  <div className="relative">
+                    <div className="flex items-center gap-2 p-2 border rounded-lg">
+                      <Image className="w-4 h-4" />
+                      <span className="text-sm truncate flex-1">{formData.featured_image_url}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeImage}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <img
+                      src={formData.featured_image_url}
+                      alt="Preview"
+                      className="mt-2 w-full h-32 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between">

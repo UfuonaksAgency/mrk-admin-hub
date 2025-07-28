@@ -129,6 +129,10 @@ export function AdminResources() {
     if (!resourceToDelete) return;
 
     try {
+      // Get the resource to find the file URL
+      const resourceToDeleteData = resources.find(r => r.id === resourceToDelete);
+      
+      // Delete from database
       const { error } = await supabase
         .from('free_resources')
         .delete()
@@ -136,9 +140,29 @@ export function AdminResources() {
 
       if (error) throw error;
 
+      // Delete file from storage if it exists
+      if (resourceToDeleteData?.download_url) {
+        try {
+          // Extract file path from URL
+          const url = new URL(resourceToDeleteData.download_url);
+          const pathParts = url.pathname.split('/');
+          const bucketIndex = pathParts.findIndex(part => part === 'resources');
+          
+          if (bucketIndex !== -1 && pathParts[bucketIndex + 1]) {
+            const filePath = pathParts.slice(bucketIndex + 1).join('/');
+            await supabase.storage
+              .from('resources')
+              .remove([filePath]);
+          }
+        } catch (storageError) {
+          console.warn('Failed to delete file from storage:', storageError);
+          // Don't fail the whole operation if storage deletion fails
+        }
+      }
+
       toast({
         title: "Success",
-        description: "Resource deleted successfully.",
+        description: "Resource and file deleted successfully.",
       });
 
       fetchResources();
