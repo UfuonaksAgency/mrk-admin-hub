@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,52 +27,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
-// Mock data for blog posts
-const mockBlogPosts = [
-  {
-    id: '1',
-    title: 'Advanced Trading Strategies for 2024',
-    slug: 'advanced-trading-strategies-2024',
-    excerpt: 'Discover the most effective trading strategies that are working in the current market...',
-    status: 'published',
-    featured: true,
-    viewCount: 1250,
-    createdAt: '2024-01-15',
-    publishedAt: '2024-01-15'
-  },
-  {
-    id: '2',
-    title: 'Risk Management in Volatile Markets',
-    slug: 'risk-management-volatile-markets',
-    excerpt: 'Learn how to protect your capital during uncertain market conditions...',
-    status: 'published',
-    featured: false,
-    viewCount: 890,
-    createdAt: '2024-01-10',
-    publishedAt: '2024-01-12'
-  },
-  {
-    id: '3',
-    title: 'Technical Analysis Fundamentals',
-    slug: 'technical-analysis-fundamentals',
-    excerpt: 'Master the basics of technical analysis to improve your trading decisions...',
-    status: 'draft',
-    featured: false,
-    viewCount: 0,
-    createdAt: '2024-01-08',
-    publishedAt: null
-  }
-];
+interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  is_published: boolean;
+  is_featured: boolean;
+  view_count: number | null;
+  created_at: string;
+  published_at: string | null;
+}
 
 export function AdminBlog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const filteredPosts = mockBlogPosts.filter(post => {
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setBlogPosts(data || []);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch blog posts.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredPosts = blogPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || post.status === statusFilter;
+                         (post.excerpt && post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesStatus = statusFilter === "all" || 
+                         (statusFilter === "published" && post.is_published) ||
+                         (statusFilter === "draft" && !post.is_published);
     return matchesSearch && matchesStatus;
   });
 
@@ -119,29 +125,38 @@ export function AdminBlog() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {filteredPosts.map((post) => (
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No blog posts found.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredPosts.map((post) => (
                 <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold truncate">{post.title}</h3>
-                      {post.featured && (
+                      {post.is_featured && (
                         <Badge variant="default" className="text-xs">Featured</Badge>
                       )}
                       <Badge 
-                        variant={post.status === 'published' ? 'default' : 'secondary'}
+                        variant={post.is_published ? 'default' : 'secondary'}
                         className="text-xs"
                       >
-                        {post.status}
+                        {post.is_published ? 'published' : 'draft'}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground truncate mb-2">
                       {post.excerpt}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>Created: {post.createdAt}</span>
-                      {post.publishedAt && <span>Published: {post.publishedAt}</span>}
-                      <span>Views: {post.viewCount}</span>
+                      <span>Created: {new Date(post.created_at).toLocaleDateString()}</span>
+                      {post.published_at && <span>Published: {new Date(post.published_at).toLocaleDateString()}</span>}
+                      <span>Views: {post.view_count || 0}</span>
                     </div>
                   </div>
                   
@@ -168,7 +183,8 @@ export function AdminBlog() {
                   </DropdownMenu>
                 </div>
               ))}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

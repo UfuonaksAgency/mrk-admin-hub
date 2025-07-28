@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,49 +32,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
-// Mock data for free resources
-const mockResources = [
-  {
-    id: '1',
-    title: 'Complete Trading Guide',
-    description: 'A comprehensive guide covering all aspects of trading',
-    type: 'pdf',
-    size_info: '2.5 MB',
-    page_info: '45 pages',
-    features: ['Market Analysis', 'Risk Management', 'Trading Psychology'],
-    download_url: '/resources/trading-guide.pdf',
-    is_active: true,
-    display_order: 1,
-    created_at: '2024-01-15'
-  },
-  {
-    id: '2',
-    title: 'Technical Analysis Video Series',
-    description: 'Step-by-step video tutorials on technical analysis',
-    type: 'video',
-    size_info: '1.2 GB',
-    page_info: '8 videos',
-    features: ['Chart Patterns', 'Indicators', 'Price Action'],
-    download_url: '/resources/technical-analysis-videos.zip',
-    is_active: true,
-    display_order: 2,
-    created_at: '2024-01-10'
-  },
-  {
-    id: '3',
-    title: 'Risk Management Spreadsheet',
-    description: 'Excel template for calculating position sizes',
-    type: 'spreadsheet',
-    size_info: '156 KB',
-    page_info: '5 sheets',
-    features: ['Position Sizing', 'Risk Calculator', 'Portfolio Tracker'],
-    download_url: '/resources/risk-management.xlsx',
-    is_active: false,
-    display_order: 3,
-    created_at: '2024-01-08'
-  }
-];
+interface FreeResource {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  size_info: string;
+  page_info: string;
+  features: string[];
+  download_url: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
 
 function getResourceIcon(type: string) {
   switch (type) {
@@ -94,8 +67,35 @@ export function AdminResources() {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [resources, setResources] = useState<FreeResource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const filteredResources = mockResources.filter(resource => {
+  useEffect(() => {
+    fetchResources();
+  }, []);
+
+  const fetchResources = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('free_resources')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setResources(data || []);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch resources.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredResources = resources.filter(resource => {
     const matchesSearch = resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          resource.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === "all" || resource.type === typeFilter;
@@ -161,8 +161,17 @@ export function AdminResources() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredResources.map((resource) => {
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : filteredResources.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No resources found.
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredResources.map((resource) => {
                 const IconComponent = getResourceIcon(resource.type);
                 return (
                   <Card key={resource.id} className="hover:shadow-elegant transition-shadow">
@@ -235,8 +244,9 @@ export function AdminResources() {
                     </CardContent>
                   </Card>
                 );
-              })}
-            </div>
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
