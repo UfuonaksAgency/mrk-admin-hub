@@ -60,7 +60,7 @@ interface FreeResource {
 }
 
 function getResourceIcon(type: string) {
-  switch (type) {
+  switch (type?.toLowerCase()) {
     case 'pdf':
       return FileText;
     case 'video':
@@ -69,6 +69,8 @@ function getResourceIcon(type: string) {
       return FileSpreadsheet;
     case 'image':
       return FileImage;
+    case 'tool':
+      return File;
     default:
       return File;
   }
@@ -88,18 +90,41 @@ export function AdminResources() {
 
   useEffect(() => {
     fetchResources();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('free_resources_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'free_resources' },
+        () => {
+          console.log('Free resources table changed, refetching...');
+          fetchResources();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchResources = async () => {
     try {
+      console.log('Fetching resources...');
       const { data, error } = await supabase
         .from('free_resources')
         .select('*')
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching resources:', error);
+        throw error;
+      }
+      
+      console.log('Fetched resources:', data);
       setResources(data || []);
     } catch (error) {
+      console.error('Failed to fetch resources:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -179,8 +204,10 @@ export function AdminResources() {
   };
 
   const handleSave = () => {
+    console.log('HandleSave called - refetching resources...');
     fetchResources();
     setEditingResource(null);
+    setDialogOpen(false);
   };
 
   const handleDownload = async (resource: FreeResource) => {
@@ -241,6 +268,7 @@ export function AdminResources() {
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="spreadsheet">Spreadsheet</SelectItem>
                     <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="tool">Tool</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>

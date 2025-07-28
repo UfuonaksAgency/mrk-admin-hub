@@ -111,23 +111,37 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
         features: featuresText.split(",").map(f => f.trim()).filter(f => f)
       };
 
+      console.log('Saving resource data:', resourceData);
+
       if (resource?.id) {
+        console.log('Updating existing resource with id:', resource.id);
         const { error } = await supabase
           .from('free_resources')
           .update(resourceData)
           .eq('id', resource.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating resource:', error);
+          throw error;
+        }
+        
+        console.log('Resource updated successfully');
         toast({
           title: "Success",
           description: "Resource updated successfully.",
         });
       } else {
+        console.log('Creating new resource');
         const { error } = await supabase
           .from('free_resources')
           .insert([resourceData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating resource:', error);
+          throw error;
+        }
+        
+        console.log('Resource created successfully');
         toast({
           title: "Success",
           description: "Resource created successfully.",
@@ -137,6 +151,7 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
       onSave();
       onOpenChange(false);
     } catch (error) {
+      console.error('Failed to save resource:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -194,6 +209,7 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
                     <SelectItem value="video">Video</SelectItem>
                     <SelectItem value="spreadsheet">Spreadsheet</SelectItem>
                     <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="tool">Tool</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
