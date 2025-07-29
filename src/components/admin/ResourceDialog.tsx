@@ -18,6 +18,7 @@ interface FreeResource {
   page_info: string;
   features: string[];
   download_url?: string;
+  external_link?: string;
   is_active: boolean;
   display_order: number;
   icon_name: string;
@@ -38,6 +39,7 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
     size_info: "",
     page_info: "",
     features: [],
+    external_link: "",
     is_active: true,
     display_order: 0,
     icon_name: "FileText"
@@ -59,6 +61,7 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
         size_info: "",
         page_info: "",
         features: [],
+        external_link: "",
         is_active: true,
         display_order: 0,
         icon_name: "FileText"
@@ -106,6 +109,16 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.download_url && !formData.external_link) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please provide either a file upload or an external link",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -292,6 +305,17 @@ export function ResourceDialog({ open, onOpenChange, resource, onSave }: Resourc
               {formData.download_url && (
                 <p className="text-sm text-success mt-1">File uploaded successfully</p>
               )}
+            </div>
+
+            <div>
+              <Label htmlFor="external_link">External Link</Label>
+              <Input
+                id="external_link"
+                type="url"
+                placeholder="https://example.com"
+                value={formData.external_link || ""}
+                onChange={(e) => setFormData({ ...formData, external_link: e.target.value })}
+              />
             </div>
 
             <div className="flex items-center space-x-2">

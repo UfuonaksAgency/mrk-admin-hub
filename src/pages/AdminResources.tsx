@@ -19,7 +19,8 @@ import {
   FileSpreadsheet,
   FileImage,
   File,
-  Smartphone
+  Smartphone,
+  ExternalLink
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,6 +56,7 @@ interface FreeResource {
   page_info: string;
   features: string[];
   download_url: string | null;
+  external_link?: string;
   is_active: boolean;
   display_order: number;
   created_at: string;
@@ -228,6 +230,12 @@ export function AdminResources() {
     }
   };
 
+  const handleExternalLink = (resource: FreeResource) => {
+    if (resource.external_link) {
+      window.open(resource.external_link, '_blank');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -327,10 +335,18 @@ export function AdminResources() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDownload(resource)}>
-                              <Download className="w-4 h-4 mr-2" />
-                              Download
-                            </DropdownMenuItem>
+                            {resource.download_url && (
+                              <DropdownMenuItem onClick={() => handleDownload(resource)}>
+                                <Download className="w-4 h-4 mr-2" />
+                                Download File
+                              </DropdownMenuItem>
+                            )}
+                            {resource.external_link && (
+                              <DropdownMenuItem onClick={() => handleExternalLink(resource)}>
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                Visit Link
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onClick={() => handleEdit(resource)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit

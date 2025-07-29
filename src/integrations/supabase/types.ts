@@ -164,6 +164,7 @@ export type Database = {
           description: string
           display_order: number
           download_url: string | null
+          external_link: string | null
           features: string[]
           icon_name: string
           id: string
@@ -179,6 +180,7 @@ export type Database = {
           description: string
           display_order?: number
           download_url?: string | null
+          external_link?: string | null
           features: string[]
           icon_name?: string
           id?: string
@@ -194,6 +196,7 @@ export type Database = {
           description?: string
           display_order?: number
           download_url?: string | null
+          external_link?: string | null
           features?: string[]
           icon_name?: string
           id?: string
