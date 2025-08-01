@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Users, FileText, Download } from "lucide-react";
+import { TrendingUp, Users, FileText, Download, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StatCardProps {
@@ -41,7 +41,9 @@ export function DashboardStats() {
     totalResources: 0,
     activeResources: 0,
     totalDownloads: 0,
-    analyticsEvents: 0
+    analyticsEvents: 0,
+    totalRevenue: 0,
+    pendingPayments: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -58,13 +60,19 @@ export function DashboardStats() {
         const blogPosts = blogResult.data || [];
         const resources = resourcesResult.data || [];
         
+        // Mock payment data for now (will be replaced with real data when crypto_payments is available)
+        const mockRevenue = 1200;
+        const mockPendingPayments = 2;
+        
         setStats({
           blogPosts: blogPosts.length,
           publishedPosts: blogPosts.filter(post => post.is_published).length,
           totalResources: resources.length,
           activeResources: resources.filter(resource => resource.is_active).length,
           totalDownloads: downloadsResult.data?.length || 0,
-          analyticsEvents: analyticsResult.data?.length || 0
+          analyticsEvents: analyticsResult.data?.length || 0,
+          totalRevenue: mockRevenue,
+          pendingPayments: mockPendingPayments
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -95,7 +103,7 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <StatCard
         title="Total Blog Posts"
         value={stats.blogPosts}
@@ -112,7 +120,14 @@ export function DashboardStats() {
         title="Resource Downloads"
         value={stats.totalDownloads}
         description="Total downloads"
-        icon={Download}
+        icon={Users}
+      />
+      <StatCard
+        title="Total Revenue"
+        value={`$${stats.totalRevenue.toLocaleString()}`}
+        description={`${stats.pendingPayments} pending payments`}
+        icon={DollarSign}
+        trend="+8% this month"
       />
       <StatCard
         title="Site Activity"

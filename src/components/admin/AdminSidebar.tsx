@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, FileText, Download, Calendar, Users, GraduationCap, BarChart3, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, Download, Calendar, Users, GraduationCap, BarChart3, Settings, CreditCard } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 const navigationItems = [{
   title: "Dashboard",
@@ -13,6 +13,10 @@ const navigationItems = [{
   title: "Free Resources",
   url: "/admin/resources",
   icon: Download
+}, {
+  title: "Payments",
+  url: "/admin/payments",
+  icon: CreditCard
 }];
 export function AdminSidebar() {
   const {
