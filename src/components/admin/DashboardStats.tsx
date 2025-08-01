@@ -43,26 +43,50 @@ export function DashboardStats() {
     totalDownloads: 0,
     analyticsEvents: 0,
     totalRevenue: 0,
-    pendingPayments: 0
+    pendingPayments: 0,
+    growthPercentage: 0
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [blogResult, resourcesResult, downloadsResult, analyticsResult] = await Promise.all([
+        const [blogResult, resourcesResult, downloadsResult, analyticsResult, consultationsResult] = await Promise.all([
           supabase.from('blog_posts').select('id, is_published'),
           supabase.from('free_resources').select('id, is_active'),
           supabase.from('resource_downloads').select('id'),
-          supabase.from('analytics_events').select('id')
+          supabase.from('analytics_events').select('id'),
+          supabase.from('consultations').select('id, payment_status, created_at')
         ]);
 
         const blogPosts = blogResult.data || [];
         const resources = resourcesResult.data || [];
+        const consultations = consultationsResult.data || [];
         
-        // Mock payment data for now (will be replaced with real data when crypto_payments is available)
-        const mockRevenue = 1200;
-        const mockPendingPayments = 2;
+        // Calculate payment statistics from consultations
+        const paidConsultations = consultations.filter(c => c.payment_status === 'paid');
+        const totalRevenue = paidConsultations.length * 300; // Assuming $300 per consultation
+        const pendingPayments = consultations.filter(c => c.payment_status === 'pending').length;
+        
+        // Calculate growth (compare with last month)
+        const thisMonth = new Date();
+        const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() - 1, 1);
+        const thisMonthStart = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
+        
+        const thisMonthPaid = consultations.filter(c => 
+          c.payment_status === 'paid' && 
+          new Date(c.created_at) >= thisMonthStart
+        ).length;
+        
+        const lastMonthPaid = consultations.filter(c => 
+          c.payment_status === 'paid' && 
+          new Date(c.created_at) >= lastMonth && 
+          new Date(c.created_at) < thisMonthStart
+        ).length;
+        
+        const growthPercentage = lastMonthPaid > 0 
+          ? Math.round(((thisMonthPaid - lastMonthPaid) / lastMonthPaid) * 100)
+          : thisMonthPaid > 0 ? 100 : 0;
         
         setStats({
           blogPosts: blogPosts.length,
@@ -71,8 +95,9 @@ export function DashboardStats() {
           activeResources: resources.filter(resource => resource.is_active).length,
           totalDownloads: downloadsResult.data?.length || 0,
           analyticsEvents: analyticsResult.data?.length || 0,
-          totalRevenue: mockRevenue,
-          pendingPayments: mockPendingPayments
+          totalRevenue: totalRevenue,
+          pendingPayments: pendingPayments,
+          growthPercentage: growthPercentage
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -127,7 +152,7 @@ export function DashboardStats() {
         value={`$${stats.totalRevenue.toLocaleString()}`}
         description={`${stats.pendingPayments} pending payments`}
         icon={DollarSign}
-        trend="+8% this month"
+        trend={stats.growthPercentage > 0 ? `+${stats.growthPercentage}% this month` : stats.growthPercentage < 0 ? `${stats.growthPercentage}% this month` : "No change this month"}
       />
       <StatCard
         title="Site Activity"

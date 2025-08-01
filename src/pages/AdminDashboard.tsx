@@ -1,6 +1,8 @@
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { RecentActivity } from "@/components/admin/RecentActivity";
+import { RevenueChart } from "@/components/admin/RevenueChart";
+import { PaymentStatusChart } from "@/components/admin/PaymentStatusChart";
 
 export function AdminDashboard() {
   return (
@@ -16,6 +18,11 @@ export function AdminDashboard() {
         </div>
 
         <DashboardStats />
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <RevenueChart />
+          <PaymentStatusChart />
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">

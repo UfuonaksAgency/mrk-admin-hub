@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { PaymentStats } from "@/components/admin/PaymentStats";
 import { PaymentTable } from "@/components/admin/PaymentTable";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { RevenueChart } from "@/components/admin/RevenueChart";
+import { PaymentStatusChart } from "@/components/admin/PaymentStatusChart";
 import { Loader2 } from "lucide-react";
 
 interface CryptoPayment {
@@ -34,27 +34,46 @@ export function AdminPayments() {
   }, []);
 
   const fetchPayments = async () => {
+    setLoading(true);
     try {
-      // For now, let's use mock data since crypto_payments might not be in types yet
+      // For now, using mock data since crypto_payments might not be in types yet
+      // TODO: Replace with real Supabase query when crypto_payments is available
       const mockPayments: CryptoPayment[] = [
         {
           id: "1",
-          amount_usd: 300,
-          amount_crypto: 0.01,
+          amount_usd: 300.00,
+          amount_crypto: 0.0075,
           coin_type: "BTC",
-          status: "pending",
+          status: "completed",
           payment_address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-          transaction_hash: "abc123def456",
-          created_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          transaction_hash: "3a4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3u4v5w6x7y8z9",
           consultation_id: "cons-1",
+          created_at: "2024-01-15T10:30:00Z",
+          expires_at: "2024-01-16T10:30:00Z",
           consultations: {
             name: "John Doe",
             email: "john@example.com",
             status: "confirmed"
           }
+        },
+        {
+          id: "2",
+          amount_usd: 300.00,
+          amount_crypto: 0.0076,
+          coin_type: "BTC",
+          status: "pending",
+          payment_address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+          created_at: "2024-01-16T14:20:00Z",
+          expires_at: "2024-01-17T14:20:00Z",
+          consultation_id: "cons-2",
+          consultations: {
+            name: "Jane Smith",
+            email: "jane@example.com",
+            status: "pending"
+          }
         }
       ];
+      
       setPayments(mockPayments);
     } catch (error) {
       console.error('Error fetching payments:', error);
@@ -87,17 +106,12 @@ export function AdminPayments() {
 
         <PaymentStats payments={payments} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment History</CardTitle>
-            <CardDescription>
-              All cryptocurrency payments and their status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PaymentTable payments={payments} onRefresh={fetchPayments} />
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <RevenueChart />
+          <PaymentStatusChart />
+        </div>
+
+        <PaymentTable payments={payments} onRefresh={fetchPayments} />
       </div>
     </AdminLayout>
   );
