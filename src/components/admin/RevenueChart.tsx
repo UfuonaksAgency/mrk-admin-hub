@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { ClientOnly } from "@/components/ui/client-only";
 
 export function RevenueChart() {
   const [data, setData] = useState<Array<{ date: string; revenue: number }>>([]);
@@ -93,36 +94,38 @@ export function RevenueChart() {
         <p className="text-sm text-muted-foreground">Daily revenue from completed payments</p>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis 
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(value) => `$${value}`}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent />}
-                formatter={(value: any) => [`$${value}`, "Revenue"]}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={3}
-                dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        <ClientOnly fallback={<div className="h-[300px] animate-pulse bg-muted rounded"></div>}>
+          <ChartContainer config={chartConfig} className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) => `$${value}`}
+                />
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  formatter={(value: any) => [`$${value}`, "Revenue"]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={3}
+                  dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </ClientOnly>
       </CardContent>
     </Card>
   );
