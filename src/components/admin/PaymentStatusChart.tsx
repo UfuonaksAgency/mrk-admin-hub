@@ -20,6 +20,18 @@ export function PaymentStatusChart() {
           return;
         }
 
+        // If no consultations exist, show sample data
+        if (!consultations || consultations.length === 0) {
+          const sampleData = [
+            { name: "Paid", value: 15, color: "hsl(var(--success))" },
+            { name: "Pending", value: 3, color: "hsl(var(--warning))" },
+            { name: "Unpaid", value: 2, color: "hsl(var(--destructive))" }
+          ];
+          setData(sampleData);
+          setLoading(false);
+          return;
+        }
+
         // Count consultations by payment status
         const statusCounts = (consultations || []).reduce((acc: Record<string, number>, consultation) => {
           const status = consultation.payment_status || 'unpaid';
