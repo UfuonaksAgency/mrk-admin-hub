@@ -3,12 +3,10 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
-import { useWindowSize } from "@/hooks/use-window-size";
 
 export default function RevenueChartContent() {
   const [data, setData] = useState<Array<{ date: string; revenue: number }>>([]);
   const [loading, setLoading] = useState(true);
-  const { width } = useWindowSize();
 
   useEffect(() => {
     const fetchRevenueData = async () => {
@@ -74,35 +72,8 @@ export default function RevenueChartContent() {
   };
 
   if (loading) {
-    return <div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>;
+    return <div className="w-full h-full animate-pulse bg-muted rounded"></div>;
   }
-
-  // Responsive breakpoints
-  const isMobile = width < 640;
-  const isTablet = width >= 640 && width < 1024;
-  
-  // Calculate optimal tick interval based on data length and screen size
-  const getTickInterval = () => {
-    if (data.length <= 7) return 0; // Show all ticks for small datasets
-    if (isMobile) return Math.ceil(data.length / 3); // Show ~3 ticks on mobile
-    if (isTablet) return Math.ceil(data.length / 5); // Show ~5 ticks on tablet
-    return Math.ceil(data.length / 7); // Show ~7 ticks on desktop
-  };
-
-  // Improved formatting for X-axis readability
-  const formatXAxisTick = (value: string) => {
-    if (isMobile) {
-      // Convert to short format: "Dec 15" -> "12/15"
-      return value.replace(/(\w{3}) (\d+)/, (match, month, day) => {
-        const monthMap: { [key: string]: string } = {
-          'Jan': '1', 'Feb': '2', 'Mar': '3', 'Apr': '4', 'May': '5', 'Jun': '6',
-          'Jul': '7', 'Aug': '8', 'Sep': '9', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-        };
-        return `${monthMap[month]}/${day}`;
-      });
-    }
-    return value;
-  };
 
   const formatYAxisTick = (value: number) => {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
@@ -110,46 +81,39 @@ export default function RevenueChartContent() {
     return `$${value.toLocaleString()}`;
   };
 
-  // Calculate dynamic margins for proper centering
-  const getMargins = () => {
-    return {
-      top: isMobile ? 15 : 20,
-      right: isMobile ? 20 : 30,
-      left: isMobile ? 55 : isTablet ? 65 : 75,
-      bottom: isMobile ? 45 : 35
-    };
-  };
-
   return (
-    <div className="w-full h-48 sm:h-64 lg:h-[300px] flex items-center justify-center">
+    <div className="w-full h-full grid place-items-center">
       <ChartContainer config={chartConfig} className="w-full h-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={getMargins()}>
+          <LineChart 
+            data={data} 
+            margin={{ top: 20, right: 20, left: 60, bottom: 40 }}
+            className="chart-container"
+          >
             <XAxis 
               dataKey="date" 
               axisLine={false}
               tickLine={false}
               tick={{ 
                 fill: 'hsl(var(--muted-foreground))', 
-                fontSize: isMobile ? 12 : isTablet ? 13 : 14,
+                fontSize: 'clamp(10px, 2vw, 14px)',
                 fontWeight: 500
               }}
-              tickFormatter={formatXAxisTick}
-              interval={getTickInterval()}
-              angle={isMobile ? -45 : 0}
-              textAnchor={isMobile ? "end" : "middle"}
-              height={isMobile ? 45 : 35}
+              interval="preserveStartEnd"
+              angle={-45}
+              textAnchor="end"
+              height={40}
             />
             <YAxis 
               axisLine={false}
               tickLine={false}
               tick={{ 
                 fill: 'hsl(var(--muted-foreground))', 
-                fontSize: isMobile ? 12 : isTablet ? 13 : 14,
+                fontSize: 'clamp(10px, 2vw, 14px)',
                 fontWeight: 500
               }}
               tickFormatter={formatYAxisTick}
-              width={isMobile ? 55 : isTablet ? 65 : 75}
+              width={60}
             />
             <ChartTooltip 
               content={<ChartTooltipContent />}
@@ -160,14 +124,14 @@ export default function RevenueChartContent() {
               type="monotone" 
               dataKey="revenue" 
               stroke="hsl(var(--primary))" 
-              strokeWidth={isMobile ? 2.5 : 3}
+              strokeWidth={3}
               dot={{ 
                 fill: "hsl(var(--primary))", 
                 strokeWidth: 2, 
-                r: isMobile ? 3 : 4 
+                r: 4 
               }}
               activeDot={{ 
-                r: isMobile ? 5 : 6, 
+                r: 6, 
                 stroke: "hsl(var(--primary))", 
                 strokeWidth: 2,
                 fill: "hsl(var(--background))"

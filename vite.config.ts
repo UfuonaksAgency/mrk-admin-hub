@@ -19,6 +19,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'recharts-vendor': ['recharts']
+        }
+      }
+    }
+  },
   ssr: {
     noExternal: ['recharts', 'd3-*']
   },

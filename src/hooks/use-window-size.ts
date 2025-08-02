@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 
 interface WindowSize {
   width: number;
@@ -7,11 +7,11 @@ interface WindowSize {
 
 export function useWindowSize(): WindowSize {
   const [windowSize, setWindowSize] = useState<WindowSize>({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
-    height: typeof window !== 'undefined' ? window.innerHeight : 768,
+    width: 1024,
+    height: 768,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function handleResize() {
       setWindowSize({
         width: window.innerWidth,
@@ -19,11 +19,10 @@ export function useWindowSize(): WindowSize {
       });
     }
 
-    // Only add event listener if window is available
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
+    // Set initial size and add event listener
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return windowSize;

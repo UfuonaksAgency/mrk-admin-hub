@@ -2,12 +2,10 @@ import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { supabase } from "@/integrations/supabase/client";
-import { useWindowSize } from "@/hooks/use-window-size";
 
 export default function PaymentStatusChartContent() {
   const [data, setData] = useState<Array<{ name: string; value: number; color: string }>>([]);
   const [loading, setLoading] = useState(true);
-  const { width } = useWindowSize();
 
   useEffect(() => {
     const fetchPaymentStatusData = async () => {
@@ -72,74 +70,52 @@ export default function PaymentStatusChartContent() {
   };
 
   if (loading) {
-    return <div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>;
+    return <div className="w-full h-full animate-pulse bg-muted rounded"></div>;
   }
 
-  // Responsive breakpoints
-  const isMobile = width < 640;
-  const isTablet = width >= 640 && width < 1024;
-
-  // Dynamic pie chart sizing
-  const getChartDimensions = () => {
-    if (isMobile) {
-      return { innerRadius: 35, outerRadius: 65 };
-    }
-    if (isTablet) {
-      return { innerRadius: 50, outerRadius: 85 };
-    }
-    return { innerRadius: 60, outerRadius: 100 };
-  };
-
-  const { innerRadius, outerRadius } = getChartDimensions();
-
-  // Calculate optimal margins for centering
-  const getMargins = () => {
-    if (isMobile) return { top: 10, right: 10, bottom: 10, left: 10 };
-    if (isTablet) return { top: 15, right: 15, bottom: 15, left: 15 };
-    return { top: 20, right: 20, bottom: 20, left: 20 };
-  };
-
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
-      <div className="w-full h-48 sm:h-64 lg:h-[280px] flex items-center justify-center">
-        <ChartContainer config={chartConfig} className="w-full h-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={getMargins()}>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={innerRadius}
-                outerRadius={outerRadius}
-                paddingAngle={isMobile ? 2 : 4}
-                dataKey="value"
-              >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <ChartTooltip 
-                content={<ChartTooltipContent />}
-                formatter={(value: any, name: any) => [value, `${name} Payments`]}
+    <div className="w-full h-full grid place-items-center">
+      <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+        <div className="flex-1 w-full flex items-center justify-center">
+          <ChartContainer config={chartConfig} className="w-full h-full max-h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="40%"
+                  outerRadius="80%"
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <ChartTooltip 
+                  content={<ChartTooltipContent />}
+                  formatter={(value: any, name: any) => [value, `${name} Payments`]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
+        
+        {/* Improved legend layout */}
+        <div className="flex flex-wrap gap-4 justify-center items-center px-4">
+          {data.map((entry, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-full flex-shrink-0" 
+                style={{ backgroundColor: entry.color }}
               />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </div>
-      
-      {/* Improved legend layout */}
-      <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-row flex-wrap gap-3 sm:gap-4 lg:gap-6'} justify-center items-center px-2 sm:px-4`}>
-        {data.map((entry, index) => (
-          <div key={index} className={`flex items-center gap-2 ${isMobile ? 'justify-center w-full' : ''}`}>
-            <div 
-              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-sm sm:text-base lg:text-lg font-medium text-foreground whitespace-nowrap">
-              {entry.name}: {entry.value}
-            </span>
-          </div>
-        ))}
+              <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                {entry.name}: {entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

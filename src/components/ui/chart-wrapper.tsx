@@ -15,8 +15,8 @@ export function ChartWrapper({ title, description, children, className = "" }: C
         <CardTitle className="bg-gradient-primary bg-clip-text text-transparent text-lg sm:text-xl">{title}</CardTitle>
         {description && <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>}
       </CardHeader>
-      <CardContent className="p-2 sm:p-4 lg:p-6">
-        <div className="w-full h-48 sm:h-64 lg:h-[300px] flex items-center justify-center">
+      <CardContent className="p-0">
+        <div className="w-full aspect-[4/3] grid place-items-center">
           <Suspense fallback={<div className="w-full h-full animate-pulse bg-muted rounded"></div>}>
             {children}
           </Suspense>

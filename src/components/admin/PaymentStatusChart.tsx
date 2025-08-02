@@ -1,8 +1,5 @@
-import { createDynamicChart, ChartWrapper } from "@/components/ui/chart-wrapper";
-
-const PaymentStatusChartContent = createDynamicChart(
-  () => import("@/components/admin/charts/PaymentStatusChartContent")
-);
+import { ChartWrapper } from "@/components/ui/chart-wrapper";
+import PaymentStatusChartContent from "@/components/admin/charts/PaymentStatusChartContent";
 
 export function PaymentStatusChart() {
   return (
