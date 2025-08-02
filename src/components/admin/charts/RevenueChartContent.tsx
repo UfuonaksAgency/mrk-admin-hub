@@ -3,10 +3,12 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays } from "date-fns";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 export default function RevenueChartContent() {
   const [data, setData] = useState<Array<{ date: string; revenue: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const { width } = useWindowSize();
 
   useEffect(() => {
     const fetchRevenueData = async () => {
@@ -75,44 +77,66 @@ export default function RevenueChartContent() {
     return <div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>;
   }
 
+  // Responsive breakpoints
+  const isMobile = width < 640;
+  const isTablet = width >= 640 && width < 1024;
+
+  // Dynamic formatting based on screen size
+  const formatXAxisTick = (value: string) => {
+    if (isMobile) return value.replace('Dec ', '12/').replace('Jan ', '1/').replace('Feb ', '2/').replace('Mar ', '3/').replace('Apr ', '4/').replace('May ', '5/').replace('Jun ', '6/').replace('Jul ', '7/').replace('Aug ', '8/').replace('Sep ', '9/').replace('Oct ', '10/').replace('Nov ', '11/');
+    return value;
+  };
+
+  const formatYAxisTick = (value: number) => {
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+    return `$${value.toLocaleString()}`;
+  };
+
+  // Dynamic margins and sizing
+  const chartMargins = {
+    top: isMobile ? 10 : 20,
+    right: isMobile ? 15 : 30,
+    left: isMobile ? 45 : 65,
+    bottom: isMobile ? 25 : 40
+  };
+
+  const tickInterval = isMobile ? 4 : isTablet ? 2 : 1;
+
   return (
     <ChartContainer config={chartConfig} className="h-48 sm:h-64 lg:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart 
-          data={data} 
-          margin={{ 
-            top: 5, 
-            right: window.innerWidth < 640 ? 10 : 30, 
-            left: window.innerWidth < 640 ? 10 : 20, 
-            bottom: 5 
-          }}
-        >
+        <LineChart data={data} margin={chartMargins}>
           <XAxis 
             dataKey="date" 
             axisLine={false}
             tickLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: window.innerWidth < 640 ? 10 : 12 }}
-            interval={window.innerWidth < 640 ? 2 : 0}
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: isMobile ? 10 : 12 }}
+            tickFormatter={formatXAxisTick}
+            interval={tickInterval}
+            angle={isMobile ? -20 : 0}
+            textAnchor={isMobile ? "end" : "middle"}
+            height={isMobile ? 40 : 30}
           />
           <YAxis 
             axisLine={false}
             tickLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: window.innerWidth < 640 ? 10 : 12 }}
-            tickFormatter={(value) => window.innerWidth < 640 ? `$${value/1000}k` : `$${value}`}
-            width={window.innerWidth < 640 ? 40 : 60}
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: isMobile ? 10 : 12 }}
+            tickFormatter={formatYAxisTick}
+            width={isMobile ? 45 : 65}
           />
           <ChartTooltip 
             content={<ChartTooltipContent />}
-            formatter={(value: any) => [`$${value}`, 'Revenue']}
+            formatter={(value: any) => [`$${value.toLocaleString()}`, "Revenue"]}
             labelFormatter={(label) => `Date: ${label}`}
           />
           <Line 
             type="monotone" 
             dataKey="revenue" 
-            stroke="hsl(var(--primary))"
-            strokeWidth={window.innerWidth < 640 ? 1.5 : 2}
-            dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: window.innerWidth < 640 ? 3 : 4 }}
-            activeDot={{ r: window.innerWidth < 640 ? 4 : 6, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+            stroke="hsl(var(--primary))" 
+            strokeWidth={isMobile ? 2 : 3}
+            dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: isMobile ? 3 : 4 }}
+            activeDot={{ r: isMobile ? 5 : 6, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>

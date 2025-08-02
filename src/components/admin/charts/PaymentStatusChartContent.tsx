@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { supabase } from "@/integrations/supabase/client";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 export default function PaymentStatusChartContent() {
   const [data, setData] = useState<Array<{ name: string; value: number; color: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const { width } = useWindowSize();
 
   useEffect(() => {
     const fetchPaymentStatusData = async () => {
@@ -73,20 +75,35 @@ export default function PaymentStatusChartContent() {
     return <div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>;
   }
 
-  const isMobile = window.innerWidth < 640;
+  // Responsive breakpoints
+  const isMobile = width < 640;
+  const isTablet = width >= 640 && width < 1024;
+
+  // Dynamic pie chart sizing
+  const getChartDimensions = () => {
+    if (isMobile) {
+      return { innerRadius: 35, outerRadius: 65 };
+    }
+    if (isTablet) {
+      return { innerRadius: 50, outerRadius: 85 };
+    }
+    return { innerRadius: 60, outerRadius: 100 };
+  };
+
+  const { innerRadius, outerRadius } = getChartDimensions();
 
   return (
     <>
       <ChartContainer config={chartConfig} className="h-48 sm:h-64 lg:h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={isMobile ? 40 : 60}
-              outerRadius={isMobile ? 70 : 100}
-              paddingAngle={5}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              paddingAngle={isMobile ? 3 : 5}
               dataKey="value"
             >
               {data.map((entry, index) => (
@@ -100,14 +117,14 @@ export default function PaymentStatusChartContent() {
           </PieChart>
         </ResponsiveContainer>
       </ChartContainer>
-      <div className="flex flex-wrap gap-2 sm:gap-4 mt-4 justify-center px-2">
+      <div className="flex flex-wrap gap-1 sm:gap-2 lg:gap-4 mt-3 sm:mt-4 justify-center px-1 sm:px-2">
         {data.map((entry, index) => (
-          <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0">
+          <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0 max-w-[45%] sm:max-w-none">
             <div 
               className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-xs sm:text-sm text-muted-foreground truncate">
+            <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate">
               {entry.name}: {entry.value}
             </span>
           </div>
