@@ -92,44 +92,55 @@ export default function PaymentStatusChartContent() {
 
   const { innerRadius, outerRadius } = getChartDimensions();
 
+  // Calculate optimal margins for centering
+  const getMargins = () => {
+    if (isMobile) return { top: 10, right: 10, bottom: 10, left: 10 };
+    if (isTablet) return { top: 15, right: 15, bottom: 15, left: 15 };
+    return { top: 20, right: 20, bottom: 20, left: 20 };
+  };
+
   return (
-    <>
-      <ChartContainer config={chartConfig} className="h-48 sm:h-64 lg:h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={innerRadius}
-              outerRadius={outerRadius}
-              paddingAngle={isMobile ? 3 : 5}
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
-              formatter={(value: any, name: any) => [value, `${name} Payments`]}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </ChartContainer>
-      <div className="flex flex-wrap gap-1 sm:gap-2 lg:gap-4 mt-3 sm:mt-4 justify-center px-1 sm:px-2">
+    <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
+      <div className="w-full h-48 sm:h-64 lg:h-[280px] flex items-center justify-center">
+        <ChartContainer config={chartConfig} className="w-full h-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={getMargins()}>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={innerRadius}
+                outerRadius={outerRadius}
+                paddingAngle={isMobile ? 2 : 4}
+                dataKey="value"
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                formatter={(value: any, name: any) => [value, `${name} Payments`]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
+      
+      {/* Improved legend layout */}
+      <div className={`flex ${isMobile ? 'flex-col gap-2' : 'flex-row flex-wrap gap-3 sm:gap-4 lg:gap-6'} justify-center items-center px-2 sm:px-4`}>
         {data.map((entry, index) => (
-          <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0 max-w-[45%] sm:max-w-none">
+          <div key={index} className={`flex items-center gap-2 ${isMobile ? 'justify-center w-full' : ''}`}>
             <div 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
+              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full flex-shrink-0" 
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate">
+            <span className="text-sm sm:text-base lg:text-lg font-medium text-foreground whitespace-nowrap">
               {entry.name}: {entry.value}
             </span>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }

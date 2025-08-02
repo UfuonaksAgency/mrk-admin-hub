@@ -80,10 +80,27 @@ export default function RevenueChartContent() {
   // Responsive breakpoints
   const isMobile = width < 640;
   const isTablet = width >= 640 && width < 1024;
+  
+  // Calculate optimal tick interval based on data length and screen size
+  const getTickInterval = () => {
+    if (data.length <= 7) return 0; // Show all ticks for small datasets
+    if (isMobile) return Math.ceil(data.length / 3); // Show ~3 ticks on mobile
+    if (isTablet) return Math.ceil(data.length / 5); // Show ~5 ticks on tablet
+    return Math.ceil(data.length / 7); // Show ~7 ticks on desktop
+  };
 
-  // Dynamic formatting based on screen size
+  // Improved formatting for X-axis readability
   const formatXAxisTick = (value: string) => {
-    if (isMobile) return value.replace('Dec ', '12/').replace('Jan ', '1/').replace('Feb ', '2/').replace('Mar ', '3/').replace('Apr ', '4/').replace('May ', '5/').replace('Jun ', '6/').replace('Jul ', '7/').replace('Aug ', '8/').replace('Sep ', '9/').replace('Oct ', '10/').replace('Nov ', '11/');
+    if (isMobile) {
+      // Convert to short format: "Dec 15" -> "12/15"
+      return value.replace(/(\w{3}) (\d+)/, (match, month, day) => {
+        const monthMap: { [key: string]: string } = {
+          'Jan': '1', 'Feb': '2', 'Mar': '3', 'Apr': '4', 'May': '5', 'Jun': '6',
+          'Jul': '7', 'Aug': '8', 'Sep': '9', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+        };
+        return `${monthMap[month]}/${day}`;
+      });
+    }
     return value;
   };
 
@@ -93,53 +110,72 @@ export default function RevenueChartContent() {
     return `$${value.toLocaleString()}`;
   };
 
-  // Dynamic margins and sizing
-  const chartMargins = {
-    top: isMobile ? 10 : 20,
-    right: isMobile ? 15 : 30,
-    left: isMobile ? 45 : 65,
-    bottom: isMobile ? 25 : 40
+  // Calculate dynamic margins for proper centering
+  const getMargins = () => {
+    return {
+      top: isMobile ? 15 : 20,
+      right: isMobile ? 20 : 30,
+      left: isMobile ? 55 : isTablet ? 65 : 75,
+      bottom: isMobile ? 45 : 35
+    };
   };
 
-  const tickInterval = isMobile ? 4 : isTablet ? 2 : 1;
-
   return (
-    <ChartContainer config={chartConfig} className="h-48 sm:h-64 lg:h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={chartMargins}>
-          <XAxis 
-            dataKey="date" 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: isMobile ? 10 : 12 }}
-            tickFormatter={formatXAxisTick}
-            interval={tickInterval}
-            angle={isMobile ? -20 : 0}
-            textAnchor={isMobile ? "end" : "middle"}
-            height={isMobile ? 40 : 30}
-          />
-          <YAxis 
-            axisLine={false}
-            tickLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: isMobile ? 10 : 12 }}
-            tickFormatter={formatYAxisTick}
-            width={isMobile ? 45 : 65}
-          />
-          <ChartTooltip 
-            content={<ChartTooltipContent />}
-            formatter={(value: any) => [`$${value.toLocaleString()}`, "Revenue"]}
-            labelFormatter={(label) => `Date: ${label}`}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="revenue" 
-            stroke="hsl(var(--primary))" 
-            strokeWidth={isMobile ? 2 : 3}
-            dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: isMobile ? 3 : 4 }}
-            activeDot={{ r: isMobile ? 5 : 6, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+    <div className="w-full h-48 sm:h-64 lg:h-[300px] flex items-center justify-center">
+      <ChartContainer config={chartConfig} className="w-full h-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={getMargins()}>
+            <XAxis 
+              dataKey="date" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ 
+                fill: 'hsl(var(--muted-foreground))', 
+                fontSize: isMobile ? 12 : isTablet ? 13 : 14,
+                fontWeight: 500
+              }}
+              tickFormatter={formatXAxisTick}
+              interval={getTickInterval()}
+              angle={isMobile ? -45 : 0}
+              textAnchor={isMobile ? "end" : "middle"}
+              height={isMobile ? 45 : 35}
+            />
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ 
+                fill: 'hsl(var(--muted-foreground))', 
+                fontSize: isMobile ? 12 : isTablet ? 13 : 14,
+                fontWeight: 500
+              }}
+              tickFormatter={formatYAxisTick}
+              width={isMobile ? 55 : isTablet ? 65 : 75}
+            />
+            <ChartTooltip 
+              content={<ChartTooltipContent />}
+              formatter={(value: any) => [`$${value.toLocaleString()}`, "Revenue"]}
+              labelFormatter={(label) => `Date: ${label}`}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="revenue" 
+              stroke="hsl(var(--primary))" 
+              strokeWidth={isMobile ? 2.5 : 3}
+              dot={{ 
+                fill: "hsl(var(--primary))", 
+                strokeWidth: 2, 
+                r: isMobile ? 3 : 4 
+              }}
+              activeDot={{ 
+                r: isMobile ? 5 : 6, 
+                stroke: "hsl(var(--primary))", 
+                strokeWidth: 2,
+                fill: "hsl(var(--background))"
+              }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+    </div>
   );
 }

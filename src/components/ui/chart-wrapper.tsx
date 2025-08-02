@@ -11,14 +11,16 @@ interface ChartWrapperProps {
 export function ChartWrapper({ title, description, children, className = "" }: ChartWrapperProps) {
   return (
     <Card className={`hover:shadow-elegant transition-shadow min-w-0 overflow-hidden ${className}`}>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 text-center">
         <CardTitle className="bg-gradient-primary bg-clip-text text-transparent text-lg sm:text-xl">{title}</CardTitle>
         {description && <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>}
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
-        <Suspense fallback={<div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>}>
-          {children}
-        </Suspense>
+      <CardContent className="p-2 sm:p-4 lg:p-6">
+        <div className="w-full h-48 sm:h-64 lg:h-[300px] flex items-center justify-center">
+          <Suspense fallback={<div className="w-full h-full animate-pulse bg-muted rounded"></div>}>
+            {children}
+          </Suspense>
+        </div>
       </CardContent>
     </Card>
   );
