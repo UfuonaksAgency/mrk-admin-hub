@@ -19,4 +19,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  ssr: {
+    noExternal: ['recharts', 'd3-*']
+  },
+  optimizeDeps: {
+    include: ['recharts']
+  }
 }));
