@@ -225,8 +225,11 @@ export function PaymentTable({ payments, onRefresh }: PaymentTableProps) {
       </Table>
       
       {payments.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          No payments found
+        <div className="text-center py-12 text-muted-foreground">
+          <div className="space-y-2">
+            <p className="text-lg font-medium">No payments found</p>
+            <p className="text-sm">Payments will appear here once customers make cryptocurrency payments for consultations.</p>
+          </div>
         </div>
       )}
     </>
