@@ -72,24 +72,34 @@ export default function RevenueChartContent() {
   };
 
   if (loading) {
-    return <div className="h-[300px] animate-pulse bg-muted rounded"></div>;
+    return <div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>;
   }
 
   return (
-    <ChartContainer config={chartConfig} className="h-[300px]">
+    <ChartContainer config={chartConfig} className="h-48 sm:h-64 lg:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <LineChart 
+          data={data} 
+          margin={{ 
+            top: 5, 
+            right: window.innerWidth < 640 ? 10 : 30, 
+            left: window.innerWidth < 640 ? 10 : 20, 
+            bottom: 5 
+          }}
+        >
           <XAxis 
             dataKey="date" 
             axisLine={false}
             tickLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: window.innerWidth < 640 ? 10 : 12 }}
+            interval={window.innerWidth < 640 ? 2 : 0}
           />
           <YAxis 
             axisLine={false}
             tickLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-            tickFormatter={(value) => `$${value}`}
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: window.innerWidth < 640 ? 10 : 12 }}
+            tickFormatter={(value) => window.innerWidth < 640 ? `$${value/1000}k` : `$${value}`}
+            width={window.innerWidth < 640 ? 40 : 60}
           />
           <ChartTooltip 
             content={<ChartTooltipContent />}
@@ -100,9 +110,9 @@ export default function RevenueChartContent() {
             type="monotone" 
             dataKey="revenue" 
             stroke="hsl(var(--primary))"
-            strokeWidth={2}
-            dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-            activeDot={{ r: 6, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+            strokeWidth={window.innerWidth < 640 ? 1.5 : 2}
+            dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: window.innerWidth < 640 ? 3 : 4 }}
+            activeDot={{ r: window.innerWidth < 640 ? 4 : 6, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>

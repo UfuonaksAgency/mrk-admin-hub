@@ -70,20 +70,22 @@ export default function PaymentStatusChartContent() {
   };
 
   if (loading) {
-    return <div className="h-[300px] animate-pulse bg-muted rounded"></div>;
+    return <div className="h-48 sm:h-64 lg:h-[300px] animate-pulse bg-muted rounded"></div>;
   }
+
+  const isMobile = window.innerWidth < 640;
 
   return (
     <>
-      <ChartContainer config={chartConfig} className="h-[300px]">
+      <ChartContainer config={chartConfig} className="h-48 sm:h-64 lg:h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={100}
+              innerRadius={isMobile ? 40 : 60}
+              outerRadius={isMobile ? 70 : 100}
               paddingAngle={5}
               dataKey="value"
             >
@@ -98,14 +100,14 @@ export default function PaymentStatusChartContent() {
           </PieChart>
         </ResponsiveContainer>
       </ChartContainer>
-      <div className="flex flex-wrap gap-4 mt-4 justify-center">
+      <div className="flex flex-wrap gap-2 sm:gap-4 mt-4 justify-center px-2">
         {data.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-1 sm:gap-2 min-w-0">
             <div 
-              className="w-3 h-3 rounded-full" 
+              className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-sm text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground truncate">
               {entry.name}: {entry.value}
             </span>
           </div>
