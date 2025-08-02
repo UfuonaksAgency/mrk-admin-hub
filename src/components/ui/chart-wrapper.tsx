@@ -10,13 +10,13 @@ interface ChartWrapperProps {
 
 export function ChartWrapper({ title, description, children, className = "" }: ChartWrapperProps) {
   return (
-    <Card className={`hover:shadow-elegant transition-shadow min-w-0 overflow-hidden ${className}`}>
-      <CardHeader className="pb-2 text-center">
-        <CardTitle className="bg-gradient-primary bg-clip-text text-transparent text-lg sm:text-xl">{title}</CardTitle>
-        {description && <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>}
+    <Card className={`hover:shadow-elegant transition-shadow ${className}`}>
+      <CardHeader className="pb-3">
+        <CardTitle className="bg-gradient-primary bg-clip-text text-transparent text-center">{title}</CardTitle>
+        {description && <p className="text-sm text-muted-foreground text-center">{description}</p>}
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="w-full aspect-[4/3] grid place-items-center">
+      <CardContent className="p-6">
+        <div className="w-full h-80 flex items-center justify-center">
           <Suspense fallback={<div className="w-full h-full animate-pulse bg-muted rounded"></div>}>
             {children}
           </Suspense>

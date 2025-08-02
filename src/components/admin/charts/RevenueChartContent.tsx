@@ -76,70 +76,42 @@ export default function RevenueChartContent() {
   }
 
   const formatYAxisTick = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
     return `$${value.toLocaleString()}`;
   };
 
   return (
-    <div className="w-full h-full grid place-items-center">
-      <ChartContainer config={chartConfig} className="w-full h-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart 
-            data={data} 
-            margin={{ top: 20, right: 20, left: 60, bottom: 40 }}
-            className="chart-container"
-          >
-            <XAxis 
-              dataKey="date" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ 
-                fill: 'hsl(var(--muted-foreground))', 
-                fontSize: 'clamp(10px, 2vw, 14px)',
-                fontWeight: 500
-              }}
-              interval="preserveStartEnd"
-              angle={-45}
-              textAnchor="end"
-              height={40}
-            />
-            <YAxis 
-              axisLine={false}
-              tickLine={false}
-              tick={{ 
-                fill: 'hsl(var(--muted-foreground))', 
-                fontSize: 'clamp(10px, 2vw, 14px)',
-                fontWeight: 500
-              }}
-              tickFormatter={formatYAxisTick}
-              width={60}
-            />
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
-              formatter={(value: any) => [`$${value.toLocaleString()}`, "Revenue"]}
-              labelFormatter={(label) => `Date: ${label}`}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="revenue" 
-              stroke="hsl(var(--primary))" 
-              strokeWidth={3}
-              dot={{ 
-                fill: "hsl(var(--primary))", 
-                strokeWidth: 2, 
-                r: 4 
-              }}
-              activeDot={{ 
-                r: 6, 
-                stroke: "hsl(var(--primary))", 
-                strokeWidth: 2,
-                fill: "hsl(var(--background))"
-              }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </ChartContainer>
-    </div>
+    <ChartContainer config={chartConfig} className="w-full h-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
+          <XAxis 
+            dataKey="date" 
+            axisLine={false}
+            tickLine={false}
+            fontSize={12}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+          />
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={formatYAxisTick}
+            fontSize={12}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+          />
+          <ChartTooltip 
+            content={<ChartTooltipContent />}
+            formatter={(value: any) => [`$${value.toLocaleString()}`, 'Revenue']}
+            labelFormatter={(label) => `Date: ${label}`}
+          />
+          <Line
+            type="monotone"
+            dataKey="revenue"
+            stroke="hsl(var(--primary))"
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartContainer>
   );
 }
