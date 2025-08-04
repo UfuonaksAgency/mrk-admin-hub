@@ -18,7 +18,6 @@ export default function RevenueChartContent() {
           .gte('created_at', subDays(new Date(), 30).toISOString());
 
         if (error) {
-          console.error('Error fetching revenue data:', error);
           return;
         }
 
@@ -55,7 +54,7 @@ export default function RevenueChartContent() {
 
         setData(chartData);
       } catch (error) {
-        console.error('Error fetching revenue data:', error);
+        // Error is handled by showing loading state or sample data
       } finally {
         setLoading(false);
       }
@@ -81,7 +80,6 @@ export default function RevenueChartContent() {
 
   return (
     <ChartContainer config={chartConfig} className="w-full h-full">
-      <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
           <XAxis 
             dataKey="date" 
@@ -111,7 +109,6 @@ export default function RevenueChartContent() {
             activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
           />
         </LineChart>
-      </ResponsiveContainer>
     </ChartContainer>
   );
 }

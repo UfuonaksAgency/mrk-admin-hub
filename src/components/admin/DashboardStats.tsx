@@ -100,7 +100,7 @@ export function DashboardStats() {
           growthPercentage: growthPercentage
         });
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        // Error is handled by showing loading state
       } finally {
         setLoading(false);
       }

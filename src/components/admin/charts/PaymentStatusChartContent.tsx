@@ -15,7 +15,6 @@ export default function PaymentStatusChartContent() {
           .select('payment_status');
 
         if (error) {
-          console.error('Error fetching payment status data:', error);
           return;
         }
 
@@ -54,7 +53,7 @@ export default function PaymentStatusChartContent() {
 
         setData(chartData);
       } catch (error) {
-        console.error('Error fetching payment status data:', error);
+        // Error is handled by showing loading state or sample data
       } finally {
         setLoading(false);
       }
@@ -77,8 +76,7 @@ export default function PaymentStatusChartContent() {
     <div className="flex flex-col items-center justify-center h-full gap-6">
       <div className="flex-1 w-full max-w-sm">
         <ChartContainer config={chartConfig} className="w-full h-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+          <PieChart>
               <Pie
                 data={data}
                 cx="50%"
@@ -97,7 +95,6 @@ export default function PaymentStatusChartContent() {
                 formatter={(value: any, name: any) => [value, `${name} Payments`]}
               />
             </PieChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </div>
       

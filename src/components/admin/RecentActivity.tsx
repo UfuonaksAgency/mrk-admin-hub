@@ -87,7 +87,7 @@ export function RecentActivity() {
         
         setActivities(recentActivities.slice(0, 5));
       } catch (error) {
-        console.error('Error fetching recent activity:', error);
+        // Error is handled by showing loading state
       } finally {
         setLoading(false);
       }

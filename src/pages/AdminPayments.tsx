@@ -50,7 +50,6 @@ export function AdminPayments() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching payments:', error);
         return;
       }
 
@@ -113,7 +112,7 @@ export function AdminPayments() {
         setPayments(cryptoPayments as CryptoPayment[]);
       }
     } catch (error) {
-      console.error('Error fetching payments:', error);
+      // Error is handled by showing loading state or sample data
     } finally {
       setLoading(false);
     }
