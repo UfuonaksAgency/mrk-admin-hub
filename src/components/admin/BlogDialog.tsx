@@ -119,7 +119,7 @@ export function BlogDialog({ open, onOpenChange, blogPost, onSave }: BlogDialogP
         ...formData,
         slug: formData.slug || generateSlug(formData.title),
         published_at: formData.is_published ? new Date().toISOString() : null,
-        author_id: '00000000-0000-0000-0000-000000000000' // Placeholder for auth user
+        author_id: '00000000-0000-0000-0000-000000000001' // Admin user ID
       };
 
       if (blogPost?.id) {

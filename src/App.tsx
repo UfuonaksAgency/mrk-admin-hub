@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminBlog } from "./pages/AdminBlog";
+import { BlogPost } from "./pages/BlogPost";
+import { Blog } from "./pages/Blog";
 import { AdminResources } from "./pages/AdminResources";
 import { AdminPayments } from "./pages/AdminPayments";
 
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/blog" element={<AdminBlog />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/admin/resources" element={<AdminResources />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

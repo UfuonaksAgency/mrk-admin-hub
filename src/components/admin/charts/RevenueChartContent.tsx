@@ -21,16 +21,16 @@ export default function RevenueChartContent() {
           return;
         }
 
-        // Generate sample data if no consultations exist
         if (!consultations || consultations.length === 0) {
-          const sampleData = Array.from({ length: 30 }, (_, i) => {
+          // Create empty chart data for last 30 days
+          const chartData = Array.from({ length: 30 }, (_, i) => {
             const date = subDays(new Date(), 29 - i);
             return {
               date: format(date, 'MMM dd'),
-              revenue: Math.floor(Math.random() * 2000) + 500
+              revenue: 0
             };
           });
-          setData(sampleData);
+          setData(chartData);
           setLoading(false);
           return;
         }

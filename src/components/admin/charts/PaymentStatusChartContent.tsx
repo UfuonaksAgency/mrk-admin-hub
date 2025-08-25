@@ -18,14 +18,8 @@ export default function PaymentStatusChartContent() {
           return;
         }
 
-        // If no consultations exist, show sample data
         if (!consultations || consultations.length === 0) {
-          const sampleData = [
-            { name: "Paid", value: 15, color: "#10b981" },
-            { name: "Pending", value: 3, color: "#f59e0b" },
-            { name: "Unpaid", value: 2, color: "#ef4444" }
-          ];
-          setData(sampleData);
+          setData([]);
           setLoading(false);
           return;
         }
