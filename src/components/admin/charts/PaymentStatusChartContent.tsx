@@ -10,33 +10,34 @@ export default function PaymentStatusChartContent() {
   useEffect(() => {
     const fetchPaymentStatusData = async () => {
       try {
-        const { data: consultations, error } = await supabase
-          .from('consultations')
-          .select('payment_status');
+        // Fetch actual crypto payments data instead of consultations
+        const { data: cryptoPayments, error } = await supabase
+          .from('crypto_payments')
+          .select('status');
 
         if (error) {
           return;
         }
 
-        if (!consultations || consultations.length === 0) {
+        if (!cryptoPayments || cryptoPayments.length === 0) {
           setData([]);
           setLoading(false);
           return;
         }
 
-        // Count consultations by payment status
-        const statusCounts = (consultations || []).reduce((acc: Record<string, number>, consultation) => {
-          const status = consultation.payment_status || 'unpaid';
+        // Count crypto payments by status
+        const statusCounts = (cryptoPayments || []).reduce((acc: Record<string, number>, payment) => {
+          const status = payment.status || 'pending';
           acc[status] = (acc[status] || 0) + 1;
           return acc;
         }, {});
 
         // Convert to chart data format with colors
         const statusColors: Record<string, string> = {
-          paid: "#10b981",
+          completed: "#10b981",
           pending: "#f59e0b",
-          unpaid: "#ef4444",
-          failed: "#6b7280"
+          failed: "#ef4444",
+          expired: "#6b7280"
         };
 
         const chartData = Object.entries(statusCounts).map(([status, count]) => ({

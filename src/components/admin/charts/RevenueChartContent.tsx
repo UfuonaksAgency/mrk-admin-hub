@@ -11,34 +11,21 @@ export default function RevenueChartContent() {
   useEffect(() => {
     const fetchRevenueData = async () => {
       try {
-        const { data: consultations, error } = await supabase
-          .from('consultations')
-          .select('payment_status, created_at')
-          .eq('payment_status', 'paid')
+        // Fetch actual crypto payments data instead of consultations
+        const { data: cryptoPayments, error } = await supabase
+          .from('crypto_payments')
+          .select('amount_usd, status, created_at')
+          .eq('status', 'completed')
           .gte('created_at', subDays(new Date(), 30).toISOString());
 
         if (error) {
           return;
         }
 
-        if (!consultations || consultations.length === 0) {
-          // Create empty chart data for last 30 days
-          const chartData = Array.from({ length: 30 }, (_, i) => {
-            const date = subDays(new Date(), 29 - i);
-            return {
-              date: format(date, 'MMM dd'),
-              revenue: 0
-            };
-          });
-          setData(chartData);
-          setLoading(false);
-          return;
-        }
-
-        // Process real data
-        const dailyRevenue = consultations.reduce((acc: Record<string, number>, consultation) => {
-          const date = format(new Date(consultation.created_at), 'MMM dd');
-          acc[date] = (acc[date] || 0) + 300; // Assuming $300 per consultation
+        // Process real payment data
+        const dailyRevenue = (cryptoPayments || []).reduce((acc: Record<string, number>, payment) => {
+          const date = format(new Date(payment.created_at), 'MMM dd');
+          acc[date] = (acc[date] || 0) + Number(payment.amount_usd);
           return acc;
         }, {});
 

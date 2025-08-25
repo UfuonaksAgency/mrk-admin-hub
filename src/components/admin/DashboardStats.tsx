@@ -51,42 +51,45 @@ export function DashboardStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [blogResult, resourcesResult, downloadsResult, analyticsResult, consultationsResult] = await Promise.all([
+        const [blogResult, resourcesResult, downloadsResult, analyticsResult, cryptoPaymentsResult] = await Promise.all([
           supabase.from('blog_posts').select('id, is_published'),
           supabase.from('free_resources').select('id, is_active'),
           supabase.from('resource_downloads').select('id'),
           supabase.from('analytics_events').select('id'),
-          supabase.from('consultations').select('id, payment_status, created_at')
+          supabase.from('crypto_payments').select('id, amount_usd, status, created_at')
         ]);
 
         const blogPosts = blogResult.data || [];
         const resources = resourcesResult.data || [];
-        const consultations = consultationsResult.data || [];
+        const cryptoPayments = cryptoPaymentsResult.data || [];
         
-        // Calculate payment statistics from consultations
-        const paidConsultations = consultations.filter(c => c.payment_status === 'paid');
-        const totalRevenue = paidConsultations.length * 300; // Assuming $300 per consultation
-        const pendingPayments = consultations.filter(c => c.payment_status === 'pending').length;
+        // Calculate payment statistics from actual crypto payments
+        const completedPayments = cryptoPayments.filter(p => p.status === 'completed');
+        const totalRevenue = completedPayments.reduce((sum, payment) => sum + Number(payment.amount_usd), 0);
+        const pendingPayments = cryptoPayments.filter(p => p.status === 'pending').length;
         
         // Calculate growth (compare with last month)
         const thisMonth = new Date();
         const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() - 1, 1);
         const thisMonthStart = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
         
-        const thisMonthPaid = consultations.filter(c => 
-          c.payment_status === 'paid' && 
-          new Date(c.created_at) >= thisMonthStart
-        ).length;
+        const thisMonthCompleted = cryptoPayments.filter(p => 
+          p.status === 'completed' && 
+          new Date(p.created_at) >= thisMonthStart
+        );
         
-        const lastMonthPaid = consultations.filter(c => 
-          c.payment_status === 'paid' && 
-          new Date(c.created_at) >= lastMonth && 
-          new Date(c.created_at) < thisMonthStart
-        ).length;
+        const lastMonthCompleted = cryptoPayments.filter(p => 
+          p.status === 'completed' && 
+          new Date(p.created_at) >= lastMonth && 
+          new Date(p.created_at) < thisMonthStart
+        );
         
-        const growthPercentage = lastMonthPaid > 0 
-          ? Math.round(((thisMonthPaid - lastMonthPaid) / lastMonthPaid) * 100)
-          : thisMonthPaid > 0 ? 100 : 0;
+        const thisMonthRevenue = thisMonthCompleted.reduce((sum, p) => sum + Number(p.amount_usd), 0);
+        const lastMonthRevenue = lastMonthCompleted.reduce((sum, p) => sum + Number(p.amount_usd), 0);
+        
+        const growthPercentage = lastMonthRevenue > 0 
+          ? Math.round(((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
+          : thisMonthRevenue > 0 ? 100 : 0;
         
         setStats({
           blogPosts: blogPosts.length,
